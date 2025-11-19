@@ -54,9 +54,10 @@ private:
     unsigned char din_Pi1_invert;                               // 8 Признак инвертирования входов порта Pi1
     unsigned char din_spi_invert[G_CONST::BYTES_RW_MAX];        // 9 Признак инвертирования SPI входов 
     unsigned char dout_spi_invert[G_CONST::BYTES_RW_MAX];       //10 Признак инвертирования SPI выходов
-    signed short  power_shift;                                  //11 Сдвиг силового напряжения
-    unsigned char ssid[G_CONST::SSID_PS_L];                     //12 Имя сети
-    unsigned char password[G_CONST::SSID_PS_L];                 //13 Пароль
+    signed short  power_shift;                                  //11 Точный сдвиг силового напряжения
+    unsigned char d_power_shift;                                //12 Дискретный сдвиг силового напряжения 60гр
+    unsigned char ssid[G_CONST::SSID_PS_L];                     //13 Имя сети
+    unsigned char password[G_CONST::SSID_PS_L];                 //14 Пароль
     // Добавляя новые уставки сюда, не забывайте обновлять defaultSettings ниже!!!
   };
   
@@ -108,6 +109,7 @@ private:
     .din_spi_invert =  { 0,0,0 },
     .dout_spi_invert = { 0,0,0 },
     .power_shift = 0,
+    .d_power_shift = 0,
     .ssid = "NetName",
     .password = "Password"
   };

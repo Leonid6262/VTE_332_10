@@ -45,6 +45,7 @@ private:
   
   void control_sync();
   void timing_calc();
+  signed short limits(signed short*, signed short,signed short);
   
   enum class EOperating_mode {
     NO_SYNC,           

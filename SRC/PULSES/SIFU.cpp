@@ -61,9 +61,12 @@ void CSIFU::rising_puls()
     break;   
   case EOperating_mode::PHASING:
     // Ограничения сдвига и приращения сдвига 
-    if(v_sync.task_power_shift > s_const.Max_power_shift) v_sync.task_power_shift = s_const.Max_power_shift;
-    if(v_sync.task_power_shift < s_const.Min_power_shift) v_sync.task_power_shift = s_const.Min_power_shift;   
+    //if(v_sync.task_power_shift > s_const.Max_power_shift) v_sync.task_power_shift = s_const.Max_power_shift;
+    //if(v_sync.task_power_shift < s_const.Min_power_shift) v_sync.task_power_shift = s_const.Min_power_shift;   
+    
+    v_sync.task_power_shift = limits(&v_sync.task_power_shift, s_const.Min_power_shift, s_const.Max_power_shift);    
     A_Task_tick = s_const._0gr;
+    
     v_sync.d_shift = v_sync.task_power_shift - v_sync.prev_power_shift;
     if (abs(v_sync.d_shift) < s_const.d_A_Max_tick) v_sync.cur_power_shift = v_sync.task_power_shift;
     else
@@ -72,32 +75,38 @@ void CSIFU::rising_puls()
       v_sync.cur_power_shift += v_sync.d_shift;
     }
     v_sync.prev_power_shift = v_sync.cur_power_shift;
-    CEEPSettings::getInstance().getSettings().power_shift = v_sync.cur_power_shift;
     
     timing_calc();     // Расчёт тайминга для следующего импульса
     break;
   case EOperating_mode::NORMAL:
     // Ограничения альфа и приращения альфа   
-    if(A_Task_tick > s_const.A_Max_tick) A_Task_tick = s_const.A_Max_tick;
-    if(A_Task_tick < s_const.A_Min_tick) A_Task_tick = s_const.A_Min_tick;   
+    //if(A_Task_tick > s_const.A_Max_tick) A_Task_tick = s_const.A_Max_tick;
+    //if(A_Task_tick < s_const.A_Min_tick) A_Task_tick = s_const.A_Min_tick; 
     
-    d_Alpha = A_Task_tick - A_Prev_tick;    
-    if (abs(d_Alpha) < s_const.d_A_Max_tick) A_Cur_tick = A_Task_tick;     
-    else 
-    {
-      d_Alpha = (d_Alpha > 0 ? s_const.d_A_Max_tick : -s_const.d_A_Max_tick);
-      A_Cur_tick += d_Alpha;
-    }
-    A_Prev_tick = A_Cur_tick;
-    
+    A_Task_tick = limits(&A_Task_tick, s_const.A_Min_tick, s_const.A_Max_tick);
     timing_calc();     // Расчёт тайминга для следующего импульса
     break;
   }    
    rPulsCalc.conv_and_calc(); // Измерения, вычисления и т.п.
 }
 
+signed short CSIFU::limits(signed short* input, signed short min, signed short max)
+{
+  if(*input > max) return max;
+  if(*input < min) return min;
+  return *input;
+}
+
 void CSIFU::timing_calc()
 {
+  d_Alpha = A_Task_tick - A_Prev_tick;    
+  if (abs(d_Alpha) < s_const.d_A_Max_tick) A_Cur_tick = A_Task_tick;     
+  else 
+  {
+    d_Alpha = (d_Alpha > 0 ? s_const.d_A_Max_tick : -s_const.d_A_Max_tick);
+    A_Cur_tick += d_Alpha;
+  }
+  A_Prev_tick = A_Cur_tick;
   if(v_sync.SYNC_EVENT)
   {
     v_sync.SYNC_EVENT = false;
@@ -205,10 +214,14 @@ void  CSIFU::pulses_stop()
 }
 void  CSIFU::start_phasing_mode()
 {
+  v_sync.task_power_shift = CEEPSettings::getInstance().getSettings().power_shift;
+  v_sync.prev_power_shift = v_sync.task_power_shift;
+  v_sync.cur_power_shift = v_sync.task_power_shift; 
   Operating_mode = EOperating_mode::PHASING;
 }
 void  CSIFU::stop_phasing_mode()
 {
+  CEEPSettings::getInstance().getSettings().power_shift = v_sync.cur_power_shift;
   A_Task_tick = s_const.A_Max_tick;
   Operating_mode = EOperating_mode::NORMAL;
 }
@@ -238,10 +251,10 @@ void CSIFU::init_and_start()
   main_bridge    = false;
   
   N_Pulse = 1;   
+  v_sync.d_power_shift    = CEEPSettings::getInstance().getSettings().d_power_shift;
   v_sync.task_power_shift = CEEPSettings::getInstance().getSettings().power_shift;
   v_sync.prev_power_shift = v_sync.task_power_shift;
-  v_sync.cur_power_shift = v_sync.task_power_shift;
-  v_sync.d_power_shift = 0;
+  v_sync.cur_power_shift = v_sync.task_power_shift;  
   v_sync.SYNC_EVENT = false;  
   v_sync.no_sync_pulses = 0;
   v_sync.sync_pulses = 0;
