@@ -29,20 +29,20 @@ private:
     signed short shift_dac0;                            // 5 Смещение DAC0
     struct Disp_c                                       // 6 Коэффициенты для отображения: p_NAME в % (дискрет/100%)
     {                                                   //                                 c_NAME в единицах СИ
-      unsigned short p_var1;
-      float          c_var1;
-      unsigned short p_var2;
-      float          c_var2;
-      unsigned short p_var3;
-      float          c_var3;
-      unsigned short p_var4;
-      float          c_var4;
-      unsigned short p_var5;
-      float          c_var5;
-      unsigned short p_var6;
-      float          c_var6;
-      unsigned short p_var7;
-      float          c_var7;
+      unsigned short p_i_rotor;
+      float          c_i_rotor;
+      unsigned short p_ustat_rms;
+      float          c_ustat_rms;
+      unsigned short p_istat_rms;
+      float          c_istat_rms;
+      unsigned short p_u_rotor;
+      float          c_u_rotor;
+      unsigned short p_i_leak;
+      float          c_i_leak;
+      unsigned short p_i_node;
+      float          c_i_node;
+      unsigned short p_e_set;
+      float          c_e_set;
       unsigned short p_var8;
       float          c_var8;
       unsigned short p_var9;
@@ -82,20 +82,20 @@ private:
     .shift_dac0 = 0,
     .disp_c = 
     {
-      .p_var1 = 100,
-      .c_var1 = 0.5f,
-      .p_var2 = 1380,
-      .c_var2 = 13.8f,
-      .p_var3 = 1086,
-      .c_var3 = 0.5f,
-      .p_var4 = 100,
-      .c_var4 = 0.5f,  
-      .p_var5 = 100,
-      .c_var5 = 0.5f,
-      .p_var6 = 100,
-      .c_var6 = 0.5f,
-      .p_var7 = 100,
-      .c_var7 = 0.5f,
+      .p_i_rotor = 100,
+      .c_i_rotor = 0.5f,
+      .p_ustat_rms = 1380,
+      .c_ustat_rms = 13.8f,
+      .p_istat_rms = 1086,
+      .c_istat_rms = 0.5f,
+      .p_u_rotor = 100,
+      .c_u_rotor = 0.5f,  
+      .p_i_leak = 100,
+      .c_i_leak = 0.5f,
+      .p_i_node = 100,
+      .c_i_node = 0.5f,
+      .p_e_set = 100,
+      .c_e_set = 0.5f,
       .p_var8 = 100,
       .c_var8 = 0.5f,  
       .p_var9 = 100,

@@ -77,8 +77,6 @@ void main(void)
   
   static CIADC i_adc;                   // Внутренее ADC.
   static CADC adc;                      // Внешнее ADC.
-  static CPULSCALC puls_calc(adc);      // Измерение всех аналоговых сигналов,  
-                                        // восстанавление параметров напряжения и тока статора.
   
   static CSPI_ports spi_ports;  // Дискретные входы и выходы доступные по SPI. Примеры доступа: 
                                 //      if(rSpi_ports.Stator_Key()){...}
@@ -117,21 +115,19 @@ void main(void)
                                   CRTC::SDateTime CurDateTime = {year, month, day, hour, min, sec};                                       
                                   rRt_clockc.setDateTime(CurDateTime); <--данные пишутся в RTC в момент выполнения setDateTime(CurDateTime)
                               */
-  
+  static CPULSCALC puls_calc(adc);  // Измерение всех аналоговых сигналов, восстанавление параметров напряжения и тока статора.                                          
+                                   
   static CSIFU sifu(puls_calc); /* Классическое, компактное СИФУ, на одном таймере.
-                                   Handler синхронизации не используется.
-                                   Измеряются все аналоговые сигналы, передаются данные в ESP32, 
-                                   восстанавливаются параметры напряжения и тока статора.                                                         
-                                */
-  
+                                   Handler синхронизации не используется. */                                                 
+                                
   // Пример структуры инициализирующих значений CREM_OSC. Дистанционный осцилограф (ESP32 c WiFi модулем)
   static CREM_OSC::SSET_init set_init
   {
     {      
       // Указатели на отображаемые переменные.
        &adc.data[CADC::ROTOR_CURRENT],         
-       &adc.data[CADC::STATOR_VOLTAGE],//&puls.U_STATORA,                         // Восстановленное напряжение статора
-       &adc.data[CADC::STATOR_CURRENT],//&puls.I_STATORA,                         // Восстановленный ток статора
+       &adc.data[CADC::STATOR_VOLTAGE],//&sifu.rPulsCalc.U_STATORA,                         // Напряжение статора [rms]
+       &sifu.rPulsCalc.I_STATORA,                         // Полный ток статора [rms]
        &adc.data[CADC::ROTOR_VOLTAGE],            
        &adc.data[CADC::LEAKAGE_CURRENT],                                                                
        &adc.data[CADC::LOAD_NODE_CURRENT],
@@ -143,13 +139,13 @@ void main(void)
     },
     {
       // Коэффициенты отображения (дискрет на 100%)
-      100,//CEEPSettings::getInstance().getSettings().disp_c.p_var1,
-      100,//CEEPSettings::getInstance().getSettings().disp_c.p_var2,
-      100,//CEEPSettings::getInstance().getSettings().disp_c.p_var3,
-      100,//CEEPSettings::getInstance().getSettings().disp_c.p_var4,
-      100,//CEEPSettings::getInstance().getSettings().disp_c.p_var5,
-      100,//CEEPSettings::getInstance().getSettings().disp_c.p_var6,
-      100,//CEEPSettings::getInstance().getSettings().disp_c.p_var7
+      CEEPSettings::getInstance().getSettings().disp_c.p_i_rotor, 
+      100,//CEEPSettings::getInstance().getSettings().disp_c.p_ustat_rms,
+      CEEPSettings::getInstance().getSettings().disp_c.p_istat_rms,
+      CEEPSettings::getInstance().getSettings().disp_c.p_u_rotor,
+      CEEPSettings::getInstance().getSettings().disp_c.p_i_leak,
+      CEEPSettings::getInstance().getSettings().disp_c.p_i_node,
+      CEEPSettings::getInstance().getSettings().disp_c.p_e_set
       // По d_100p[NUMBER_TRACKS] определяется фактическое количество треков. 
     },
     // Режим работы Access_point или Station
@@ -164,23 +160,24 @@ void main(void)
   };
   static CREM_OSC rem_osc(cont_dma, set_init);  // Дистанционный осциллограф (ESP32 c WiFi модулем).Карту каналов DMA с.м. в controllerDMA.hpp               // 
                                                 // Передача данных (метод send_data()) осуществляется в точке, где отображаемые переменные обновлены,
-                                                // например в IRQ ИУ. В примере, send_data() вызывается в handler TIMER2 (имитация СИФУ)
-                                                // с.м файл обработчиков прерываний "handlers_IRQ.cpp" и "Puls.cpp"
-  
-  /*--Объекты классов тестов--*/
-    
-  static CCOMPARE compare;      // Тест компаратора напряжения статора. Измеряет частоту напряжения статора.
-                                // При использовании векторной математики восстановления синусоидальных сигналов
-                                // по 2-м измерениям, данное устройство (компаратор) излишне.
+                                                // например в IRQ ИУ. В примере, send_data() вызывается в handler TIMER3
+                                                // с.м файл обработчиков прерываний "handlers_IRQ.cpp".
   
   CProxyHandlerTIMER::getInstance().set_pointers(&sifu, &rem_osc);  // Proxy Singleton доступа к Handler TIMER.
                                                                     // Данный патерн позволяет избежать глобальных 
-                                                                    // ссылок на puls, и rem_osc
-                                                                                       
-  sifu.init_and_start();        // Старт теста ИУ
+                                                                    // ссылок на sifu, и rem_osc
+  
+  sifu.init_and_start();                        // Старт SIFU
+  
+/*--Объекты классов тестов--*/
+    
+  static CCOMPARE compare;      // Тест компаратора напряжения статора. Измеряет частоту напряжения статора.
+                                // При использовании векторной математики восстановления синусоидальных сигналов
+                                // по 2-м измерениям, данное устройство (компаратор) излишне.                                                                                       
   compare.start();              // Старт теста компаратора
   
-  static CTEST_ETH test_eth(emac_drv);  // loop Test Ethernet. По физической петле передаёт/принимает тестовые raw кадры 
+  static CTEST_ETH test_eth(emac_drv);  // loop Test Ethernet. По физической петле передаёт/принимает 
+                                        // тестовые raw кадры 
 
   /* 
     Тесты CAN1, CAN2, RS485-1, RS485-2, DAC0, PWM_DAC1, PWM_DAC2.
@@ -212,14 +209,15 @@ void main(void)
   
   CDout_cpu::UserLedOff();  // Визуальный контроль окончания инициализации (львинную долю времени занимает CD и Ethernet)
   
-  static auto& settings = CEEPSettings::getInstance().getSettings(); // Тестовый указатель
+  static auto& settings = CEEPSettings::getInstance().getSettings();    // Тестовый отладочный указатель. 
+                                                                        // В production не используется
   
   while(true)
   {        
     settings = CEEPSettings::getInstance().getSettings(); 
     
     /* Измерение всех используемых (в ВТЕ) аналоговых сигналов (внешнее ADC)
-       производится в "handlers_IRQ.cpp" */
+       производится в puls_calc(adc) */
 
     // Измерение напряжения питания +/- 5V (внутреннее ADC)
     i_adc.measure_5V();

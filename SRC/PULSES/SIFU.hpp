@@ -12,17 +12,21 @@ public:
   
   CPULSCALC& rPulsCalc;
   
-  float SYNC_FREQUENCY;
-  
   void init_and_start();
   void rising_puls();
   void faling_puls();
 
-  void start_forcing_bridge();
-  void start_main_bridge();
-  void pulses_stop();
-  void start_phasing_mode();
-  void stop_phasing_mode();
+  void set_forcing_bridge();          // Подать импульсы на форсировочный мост    
+  void set_main_bridge();             // Подать импульсы на основной мост
+  void pulses_stop();                 // Снять импульсы с обоих мостов
+  void start_phasing_mode();          // Установить режим фазировки
+  void stop_phasing_mode();           // Снять режим фазировки
+  
+  void set_a_shift(signed short);     // Установка точного сдвига синхронизации
+  void set_d_shift(unsigned char);    // Установка дискретного сдвига синхронизации
+  void set_alpha(signed short);       // Установка Alpha
+  
+  float get_Sync_Frequency();
  
 private:
  
@@ -48,7 +52,9 @@ private:
     PHASING
   };
   
-  struct SyncState 
+  EOperating_mode Operating_mode;       // Текущий режим работы СИФУ 
+  
+  struct SIFUConst                      // Структура констант
   {
     static constexpr float SYNC_F_MIN = 49.0f;
     static constexpr float SYNC_F_MAX = 51.0f;
@@ -62,29 +68,43 @@ private:
     static constexpr signed short _120gr = 6667;
     static constexpr signed short _150gr = 8333;
     static constexpr signed short _180gr = 10000;
-    static constexpr signed short Max_power_shift   =  _150gr;
+    
+    static constexpr float TIC_SEC = 1000000.0;
+    
+    static constexpr signed short Max_power_shift   =  _90gr;
     static constexpr signed short Min_power_shift   = -_90gr;
-    signed short task_power_shift;
-    signed short cur_power_shift;
+    
+    static constexpr signed short A_Max_tick   = _150gr;
+    static constexpr signed short A_Min_tick   = _30gr;
+    static constexpr signed short d_A_Max_tick = _5gr;
+    
+    static constexpr unsigned int N_PULSES     = 6;
+    
+  } s_const;
+  
+  struct SyncState                     // Структура переменных касающихся синхронизации
+  {
+    unsigned char d_power_shift;       // Дискретный сдвиг синхронизации по 60гр.
+   
+    signed short cur_power_shift;      // Точный сдвиг синхронизации.
+    signed short task_power_shift;       
     signed short prev_power_shift;
     signed short d_shift;
-    unsigned int sync_timing;
-    unsigned int CURRENT_SYNC;
-    unsigned int current_cr;                            // Текущие данные захвата таймера
-    unsigned int previous_cr;                           // Предыдущие данные захвата таймера
-    unsigned short no_sync_pulses;                      // Количество пульсов отсутствия события захвата
-    unsigned short sync_pulses;                         // Количество пульсов с событиями захвата
     
-    static constexpr float TIC_SEC = 1000000.0;               
-    EOperating_mode Operating_mode;    
-     
-    bool SYNC_EVENT;
+    bool SYNC_EVENT;                    // Флаг события захвата
+    unsigned int CURRENT_SYNC;          // Актуальные данные захвата
+    
+    unsigned int current_cr;            // Текущие данные захвата таймера
+    unsigned int previous_cr;           // Предыдущие данные захвата таймера
+    unsigned short no_sync_pulses;      // Количество пульсов отсутствия события захвата
+    unsigned short sync_pulses;         // Количество пульсов с событиями захвата
+    
+    float SYNC_FREQUENCY;               // Измеренная частота                   
     
   } v_sync;
   
-  static constexpr signed short A_Max_tick   = SyncState::_150gr;
-  static constexpr signed short A_Min_tick   = SyncState::_30gr;
-  static constexpr signed short d_A_Max_tick = SyncState::_5gr;
+  
+  // -- Аппаратные константы ----------------------------------------------------------------------
   
   static constexpr unsigned int IOCON_P1_PWM = 0x03;                         // Тип портов - PWM
   static constexpr unsigned int PWM_div_0    = 60;                           // Делитель частоты
@@ -95,8 +115,7 @@ private:
   static constexpr unsigned int P1_3 = 0x03;                                 //Port1:3  
   
   static constexpr unsigned int PWM_WIDTH        = 10;                          //us
-  static constexpr unsigned int PULSE_WIDTH      = 550;//560;                         //us
-  static constexpr unsigned int N_PULSES         = 6;
+  static constexpr unsigned int PULSE_WIDTH      = 550;                         //us
   static constexpr unsigned int OFF_PULSES       = 0x003F0000;                   //Импульсы в порту
   static constexpr unsigned int FIRS_PULS_PORT   = 16;                           //1-й импульс в порту 
   

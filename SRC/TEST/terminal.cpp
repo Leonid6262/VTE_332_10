@@ -165,18 +165,18 @@ void CTerminal::terminal()
     case 1:
       deps.rComPort.transfer_string(const_cast<char*>("MAIN            \r"));
       deps.rPuls.pulses_stop();
-      deps.rPuls.start_main_bridge();
+      deps.rPuls.set_main_bridge();
       break;
     case 2:
       deps.rComPort.transfer_string(const_cast<char*>("FORSING         \r"));
       deps.rPuls.pulses_stop();
-      deps.rPuls.start_forcing_bridge();
+      deps.rPuls.set_forcing_bridge();
       break;
     }
     break;
     
   case 5:
-    sprintf(formVar, "%.1f  ", deps.rPuls.SYNC_FREQUENCY);
+    sprintf(formVar, "%.1f  ", deps.rPuls.get_Sync_Frequency());
     deps.rComPort.transfer_string(formVar);
     sprintf(formVar, "%.1f    \r", deps.rCompare.STATOR_FREQUENCY);
     deps.rComPort.transfer_string(formVar);
