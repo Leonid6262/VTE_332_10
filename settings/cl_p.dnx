@@ -12,7 +12,7 @@
         <ByteLimit>50</ByteLimit>
     </Stack>
     <DebugChecksum>
-        <Checksum>210095673</Checksum>
+        <Checksum>99268352</Checksum>
     </DebugChecksum>
     <CodeCoverage>
         <Enabled>_ 0</Enabled>
@@ -172,8 +172,7 @@
         <Fmt12>struct CRTC::SDateTime-year	3	0</Fmt12>
         <Fmt13>struct CSIFU::SyncState-cur_power_shift	3	0</Fmt13>
         <Fmt14>struct CSIFU::SyncState-d_power_shift	3	0</Fmt14>
-        <Fmt15>struct CSIFU::SyncState-prev_power_shift	3	0</Fmt15>
-        <Fmt16>struct CSIFU::SyncState-task_power_shift	3	0</Fmt16>
+        <Fmt15>struct CSIFU::SyncState-task_power_shift	3	0</Fmt15>
     </struct_types>
     <array_types>
         <Fmt0>byte[8]	3	0</Fmt0>

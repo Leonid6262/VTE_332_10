@@ -51,7 +51,7 @@ void CADC::conv_tnf(std::initializer_list<char> list)
         if (tmp_Nch < G_CONST::NUMBER_CHANNELS)
         {
           data[tmp_Nch] = ((raw_adc_data & 0x0FFF) - CEEPSettings::getInstance().getSettings().shift_adc[tmp_Nch]) *
-                          (1.0f + CEEPSettings::getInstance().getSettings().incline_adc[tmp_Nch]);
+            (1.0f + CEEPSettings::getInstance().getSettings().incline_adc[tmp_Nch]);
         }
         index_rd++;
       }

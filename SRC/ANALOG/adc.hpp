@@ -21,7 +21,7 @@ private:
     
   static constexpr unsigned int D_MODE_PULLUP   = 0x02 <<3 ;
   static constexpr unsigned int IOCON_SPI       = 0x03;
-  static constexpr unsigned int Hz_SPI          = 10000000;//4000000;
+  static constexpr unsigned int Hz_SPI          = 10000000;
   static constexpr unsigned int bits_tr         = 16;
 
 public:

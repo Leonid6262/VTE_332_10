@@ -23,17 +23,20 @@ namespace Priorities
     return (group << SubgroupBits) | subgroup;
   }
   
+  enum EG{group0, group1, group2, group3, group4};
+  enum ES{sgroup0, sgroup1, sgroup2, sgroup3, sgroup4, sgroup5, sgroup6, sgroup7};
+  
   // --- Группа 0 зарезервирована для критических системных прерываний ---
   
   // ---  Группа 1  --- 8 подгрупп 
-  constexpr unsigned int Timer3 = make_priority(1, 0);
-  constexpr unsigned int Timer2 = make_priority(1, 1);
-  constexpr unsigned int Timer1 = make_priority(1, 2);
+  constexpr unsigned int Timer3 = make_priority(group1, sgroup0);
+  constexpr unsigned int Timer2 = make_priority(group1, sgroup1);
+  constexpr unsigned int Timer1 = make_priority(group1, sgroup2);
   
   // ---  Группа 2  --- 8 подгрупп 
-  constexpr unsigned int UART   = make_priority(2, 0);
-  constexpr unsigned int DMA    = make_priority(2, 1);
-  constexpr unsigned int CAN    = make_priority(2, 2);
+  constexpr unsigned int UART   = make_priority(group2, sgroup0);
+  constexpr unsigned int DMA    = make_priority(group2, sgroup1);
+  constexpr unsigned int CAN    = make_priority(group2, sgroup2);
   
   // ---  Группа 3  --- 8 подгрупп 
   
