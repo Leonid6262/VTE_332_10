@@ -220,7 +220,8 @@ void main(void)
     settings = CEEPSettings::getInstance().getSettings(); 
     
     /* Измерение всех используемых (в ВТЕ) аналоговых сигналов (внешнее ADC)
-       производится в puls_calc(adc) */
+       производится в методе conv_and_calc() класса CPULSCALC. Вызывается
+       в  rising_puls() SIFU*/
 
     // Измерение напряжения питания +/- 5V (внутреннее ADC)
     i_adc.measure_5V();
