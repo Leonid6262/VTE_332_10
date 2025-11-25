@@ -66,7 +66,7 @@ public:
   // --- Чтение external_data[] указателей ---
   inline signed short* getExternalPointer(unsigned char channel)
   {
-    return external_data;
+    return &external_data[channel];
   }
   
   // Для отладочного указателя на external_data[] 

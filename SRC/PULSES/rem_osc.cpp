@@ -5,6 +5,59 @@
 #include "AdcStorage.hpp"
 #include <stdio.h>
 
+
+CREM_OSC::CREM_OSC(CDMAcontroller& rContDMA, CPULSCALC& rP) : rContDMA(rContDMA), rPulsCalc(rP)
+{
+  
+  // Пример структуры инициализирующих значений CREM_OSC. Дистанционный осцилограф (ESP32 c WiFi модулем)
+  
+  auto& settings = CEEPSettings::getInstance().getSettings();
+  CADC_STORAGE& instans = CADC_STORAGE::getInstance();
+  
+  set_init = {
+    {      
+      // Указатели на отображаемые переменные.
+      instans.getExternalPointer(CADC_STORAGE::ROTOR_CURRENT),           
+      &rPulsCalc.U_STATORA,                                                       // Напряжение статора [rms]
+      &rPulsCalc.I_STATORA,                                                       // Полный ток статора [rms]
+      instans.getExternalPointer(CADC_STORAGE::ROTOR_VOLTAGE),            
+      instans.getExternalPointer(CADC_STORAGE::LEAKAGE_CURRENT),                                                                
+      instans.getExternalPointer(CADC_STORAGE::LOAD_NODE_CURRENT),
+      instans.getExternalPointer(CADC_STORAGE::EXTERNAL_SETTINGS)      
+    },
+    {
+      // Имена треков (как будут подписаны в ПО ПК)
+      "I_ROT","USTAT","ISTAT","U_ROT","I_LEK","I_NOD","E_SET"
+    },
+    {
+      // Уставки коэффициентов отображения (дискрет на 100%)
+      settings.disp_c.p_i_rotor, 
+      settings.disp_c.p_ustat_rms,
+      settings.disp_c.p_istat_rms,
+      settings.disp_c.p_u_rotor,
+      settings.disp_c.p_i_leak,
+      settings.disp_c.p_i_node,
+      settings.disp_c.p_e_set
+        // Количество треков определяется по ёмкости этого массива (d_100p) 
+    },
+    // Режим работы Access_point или Station
+    CREM_OSC::Operating_mode::Access_point,
+    // Серийный номер платы контроллера (задаётся для режима Access_point)
+    CEEPSettings::getInstance().getSettings().SNboard_number,
+    // Имя сети и пароль (задаются для режима Station)
+    /* Как задавать ssid и password пока не ясно. При отсутствии панели оператора
+    и сетевых интерфейсов, возможно с ноутбука. Задавать с ПТ удовольствие так себе.*/
+    CEEPSettings::getInstance().getSettings().ssid,
+    CEEPSettings::getInstance().getSettings().password 
+  };
+  init_SPI();
+  init_dma();
+  number_actual_tracks = get_actual_number();
+  transfer_disp_c();
+  transfer_name();
+  transfer_mode();
+}
+
 // Старт передачи по DMA
 void CREM_OSC::start_dma_transfer()
 {
@@ -247,55 +300,6 @@ void CREM_OSC::pack_chars(unsigned char* str)
 }
 
 
-// Конструктор
-CREM_OSC::CREM_OSC(CDMAcontroller& rContDMA, CPULSCALC& rP) : rContDMA(rContDMA), rPulsCalc(rP)
-{
-
-// Пример структуры инициализирующих значений CREM_OSC. Дистанционный осцилограф (ESP32 c WiFi модулем)
-set_init = {
-  {      
-    // Указатели на отображаемые переменные.
-    CADC_STORAGE::getInstance().getExternalPointer(CADC_STORAGE::ROTOR_CURRENT),           
-    &rPulsCalc.U_STATORA,                                                       // Напряжение статора [rms]
-    &rPulsCalc.I_STATORA,                                                       // Полный ток статора [rms]
-    CADC_STORAGE::getInstance().getExternalPointer(CADC_STORAGE::ROTOR_VOLTAGE),            
-    CADC_STORAGE::getInstance().getExternalPointer(CADC_STORAGE::LEAKAGE_CURRENT),                                                                
-    CADC_STORAGE::getInstance().getExternalPointer(CADC_STORAGE::LOAD_NODE_CURRENT),
-    CADC_STORAGE::getInstance().getExternalPointer(CADC_STORAGE::EXTERNAL_SETTINGS)      
-  },
-  {
-    // Имена треков (как будут подписаны в ПО ПК)
-    "I_ROT","USTAT","ISTAT","U_ROT","I_LEK","I_NOD","E_SET"
-  },
-  {
-    // Уставки коэффициентов отображения (дискрет на 100%)
-    100,//CEEPSettings::getInstance().getSettings().disp_c.p_i_rotor, 
-    100,//CEEPSettings::getInstance().getSettings().disp_c.p_ustat_rms,
-    100,//CEEPSettings::getInstance().getSettings().disp_c.p_istat_rms,
-    100,//CEEPSettings::getInstance().getSettings().disp_c.p_u_rotor,
-    100,//CEEPSettings::getInstance().getSettings().disp_c.p_i_leak,
-    100,//CEEPSettings::getInstance().getSettings().disp_c.p_i_node,
-    100,//CEEPSettings::getInstance().getSettings().disp_c.p_e_set
-      // Количество треков определяется по ёмкости этого массива (d_100p) 
-  },
-  // Режим работы Access_point или Station
-  CREM_OSC::Operating_mode::Access_point,
-  // Серийный номер платы контроллера (задаётся для режима Access_point)
-  CEEPSettings::getInstance().getSettings().SNboard_number,
-  // Имя сети и пароль (задаются для режима Station)
-  /* Как задавать ssid и password пока не ясно. При отсутствии панели оператора
-  и сетевых интерфейсов, возможно с ноутбука. Задавать с ПТ удовольствие так себе.*/
-  CEEPSettings::getInstance().getSettings().ssid,
-  CEEPSettings::getInstance().getSettings().password 
-};
-
-  init_SPI();
-  init_dma();
-  number_actual_tracks = get_actual_number();
-  transfer_disp_c();
-  transfer_name();
-  transfer_mode();
-}
 
 // Инициализация SPI
 void CREM_OSC::init_SPI()

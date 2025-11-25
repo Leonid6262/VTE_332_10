@@ -157,7 +157,7 @@
                     <item>tests</item>
                     <item>data_e_adc</item>
                     <item>rem_osc</item>
-                    <item></item>
+                    <item />
                 </expressions>
                 <col-names>
                     <item>Expression</item>
