@@ -211,13 +211,13 @@ void main(void)
   
   CDout_cpu::UserLedOff();  // Визуальный контроль окончания инициализации (львинную долю времени занимает CD и Ethernet)
   
-  static auto& settings = CEEPSettings::getInstance().getSettings();    // Тестовый отладочный указатель. 
-                                                                        // В production не используется
-  
+  static auto& settings = CEEPSettings::getInstance().getSettings();    // Тестовые отладочный указатели. 
+  static auto& data_e_adc = CADC_STORAGE::getInstance().getExternal();  // В production не используются
+    
   while(true)
   {        
-    settings = CEEPSettings::getInstance().getSettings(); 
-    
+    settings = CEEPSettings::getInstance().getSettings();
+
     /* В методе conv_and_calc() (вызывается в  rising_puls() SIFU) класса CPULSCALC
        измеряются все, используемые (в ВТЕ) аналоговые сигналы (внешнее ADC) */
 

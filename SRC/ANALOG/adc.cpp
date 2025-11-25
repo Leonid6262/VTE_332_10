@@ -9,12 +9,12 @@ void CADC::conv_tnf(std::initializer_list<char> list)
   char N_ch = list.size();
 
   char index_wr = 0;
-  char timing_index = 0;
+  unsigned char timing_index = 0;
   char index_rd = 0;
   char ending_index = 0;
 
-  unsigned short raw_adc_data;
-  unsigned short tmp_Nch;
+  signed short raw_adc_data;
+  unsigned short Nch;
 
   while (true)
   {
@@ -25,7 +25,7 @@ void CADC::conv_tnf(std::initializer_list<char> list)
       if (LPC_SSP0->SR & SPI_Config::SR_TNF)
       {
         LPC_SSP1->DR = cN_CH[*(list.begin() + index_wr)];
-        timings[timing_index] = LPC_TIM3->TC;
+        CADC_STORAGE::getInstance().setTimings(timing_index, LPC_TIM3->TC); 
         index_wr++;
         timing_index++;
       }
@@ -37,7 +37,7 @@ void CADC::conv_tnf(std::initializer_list<char> list)
       {
         ending_index++;
         LPC_SSP1->DR = cN_CH[CADC_STORAGE::ch_HRf];
-        timings[timing_index] = LPC_TIM3->TC;
+        CADC_STORAGE::getInstance().setTimings(timing_index, LPC_TIM3->TC);
         timing_index++;
       }
     }
@@ -48,13 +48,10 @@ void CADC::conv_tnf(std::initializer_list<char> list)
       if (LPC_SSP1->SR & SPI_Config::SR_RNE)
       {
         raw_adc_data = LPC_SSP1->DR;
-        tmp_Nch = (raw_adc_data & 0xF000) >> 12;
-        if (tmp_Nch < G_CONST::NUMBER_CHANNELS)
-        {
-          
-          data[tmp_Nch] = ((raw_adc_data & 0x0FFF) - CEEPSettings::getInstance().getSettings().shift_adc[tmp_Nch]) *
-            (1.0f + CEEPSettings::getInstance().getSettings().incline_adc[tmp_Nch]);
-          CADC_STORAGE::getInstance().setExternal(tmp_Nch, data[tmp_Nch]);
+        Nch = (raw_adc_data & 0xF000) >> 12;
+        if (Nch < G_CONST::NUMBER_CHANNELS)
+        {          
+          CADC_STORAGE::getInstance().setExternal(Nch, (raw_adc_data & 0x0FFF));
         }
         index_rd++;
       }

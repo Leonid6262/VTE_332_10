@@ -34,9 +34,12 @@ void CPULSCALC::sin_restoration()
   Восстановление сигналов произвадится по двум мгновенным значениям и углу (Theta) между ними:
   A = sqrt( (u1*u1 + u2*u2 - 2 * u1*u2 * cos(Theta)) / (sin(Theta) * sin(Theta)) );
   */
+    
+  auto& pStorage = CADC_STORAGE::getInstance();
+  
   // Напряжение статора
-  v_restoration.u_stator_2 = rAdc.data[CADC_STORAGE::STATOR_VOLTAGE];
-  v_restoration.timing_ustator_2 = rAdc.timings[CADC_STORAGE::STATOR_VOLTAGE + 1];
+  v_restoration.u_stator_2 = pStorage.getExternal(CADC_STORAGE::STATOR_VOLTAGE);
+  v_restoration.timing_ustator_2 = pStorage.getTimings(CADC_STORAGE::STATOR_VOLTAGE + 1);
   
   unsigned int us1us1  =  v_restoration.u_stator_1 * v_restoration.u_stator_1;
   unsigned int us2us2  =  v_restoration.u_stator_2 * v_restoration.u_stator_2;
@@ -53,8 +56,8 @@ void CPULSCALC::sin_restoration()
   float usin = std::sin(u_theta);
   
   // Ток статора
-  v_restoration.i_stator_2 = rAdc.data[CADC_STORAGE::STATOR_CURRENT];
-  v_restoration.timing_istator_2 = rAdc.timings[CADC_STORAGE::STATOR_CURRENT + 1];
+  v_restoration.i_stator_2 = pStorage.getExternal(CADC_STORAGE::STATOR_CURRENT);
+  v_restoration.timing_istator_2 = pStorage.getTimings(CADC_STORAGE::STATOR_CURRENT + 1);
   
   unsigned int is1is1  =  v_restoration.i_stator_1 * v_restoration.i_stator_1;
   unsigned int is2is2  =  v_restoration.i_stator_2 * v_restoration.i_stator_2;

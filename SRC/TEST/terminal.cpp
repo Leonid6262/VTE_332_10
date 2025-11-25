@@ -253,9 +253,9 @@ void CTerminal::terminal()
     break;
     
   case 11:     
-    sprintf(formVar, "%+.2f ", deps.rI_adc.P5_A);
+    sprintf(formVar, "%+.2f ", CADC_STORAGE::getInstance().getInternal(CADC_STORAGE::EIADC_NameCh::SUPPLY_P5));
     deps.rComPort.transfer_string(formVar);
-    sprintf(formVar, "%+.2f     \r", deps.rI_adc.N5_A);
+    sprintf(formVar, "%+.2f     \r", CADC_STORAGE::getInstance().getInternal(CADC_STORAGE::EIADC_NameCh::SUPPLY_N5));
     deps.rComPort.transfer_string(formVar);
     break;  
     

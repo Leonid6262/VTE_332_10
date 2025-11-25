@@ -1,4 +1,5 @@
 #include "i_adc.hpp"
+#include "AdcStorage.hpp"
 #include "LPC407x_8x_177x_8x.h"
 #include "system_LPC177x.h"
 #include <math.h>
@@ -14,6 +15,8 @@ CIADC::CIADC()
 
 StatusRet CIADC::measure_5V()
 {
+  CADC_STORAGE& pStorage = CADC_STORAGE::getInstance();
+  
   //Измерение напряжение питания +5V
   LPC_ADC->CNR &= CLEAR; 
   LPC_ADC->CNR |= ((1UL << CH_P5) | START);
@@ -22,14 +25,16 @@ StatusRet CIADC::measure_5V()
   {
     if((LPC_TIM0->TC - prev_TC0) > DELAY) 
     {
-      P5_A = 0;
-      N5_A = 0;
+      pStorage.setInternal(CADC_STORAGE::EIADC_NameCh::SUPPLY_P5, 0);
+      pStorage.setInternal(CADC_STORAGE::EIADC_NameCh::SUPPLY_N5, 0);
       return Error;
     }
   }
   P5_prev = K_P5 * ((LPC_ADC->DR[CH_P5] >> 4) & 0xFFF);
+  float P5_A = pStorage.getInternal(CADC_STORAGE::EIADC_NameCh::SUPPLY_P5);
   P5_A = (P5_A + P5_prev) / 2.0f; 
- 
+  pStorage.setInternal(CADC_STORAGE::EIADC_NameCh::SUPPLY_P5, P5_A);
+  
   //Измерение напряжение питания -5V
   LPC_ADC->CNR &= CLEAR;
   LPC_ADC->CNR |= ((1UL << CH_N5) | START);
@@ -38,13 +43,15 @@ StatusRet CIADC::measure_5V()
   {
     if((LPC_TIM0->TC - prev_TC0) > DELAY) 
     {
-      P5_A = 0;
-      N5_A = 0;
+      pStorage.setInternal(CADC_STORAGE::EIADC_NameCh::SUPPLY_P5, 0);
+      pStorage.setInternal(CADC_STORAGE::EIADC_NameCh::SUPPLY_N5, 0);
       return Error;
     }
   }  
   N5_prev = (K_N5 * ((LPC_ADC->DR[CH_N5] >> 4) & 0xFFF)) - (3 * P5_A);
+  float N5_A = pStorage.getInternal(CADC_STORAGE::EIADC_NameCh::SUPPLY_N5);
   N5_A = (N5_A + N5_prev) / 2.0f;
+  pStorage.setInternal(CADC_STORAGE::EIADC_NameCh::SUPPLY_N5, N5_A);
   return Success;
 }
 
