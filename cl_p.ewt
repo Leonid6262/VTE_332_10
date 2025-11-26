@@ -2935,6 +2935,9 @@
             </file>
         </group>
         <file>
+            <name>$PROJ_DIR$\SRC\_factory.cpp</name>
+        </file>
+        <file>
             <name>$PROJ_DIR$\SRC\_main.cpp</name>
         </file>
         <file>
