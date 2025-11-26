@@ -5,7 +5,6 @@
 #include "AdcStorage.hpp"
 #include <stdio.h>
 
-
 CREM_OSC::CREM_OSC(CDMAcontroller& rContDMA, CPULSCALC& rP) : rContDMA(rContDMA), rPulsCalc(rP)
 {
   
@@ -50,7 +49,6 @@ CREM_OSC::CREM_OSC(CDMAcontroller& rContDMA, CPULSCALC& rP) : rContDMA(rContDMA)
     CEEPSettings::getInstance().getSettings().ssid,
     CEEPSettings::getInstance().getSettings().password 
   };
-  init_SPI();
   init_dma();
   number_actual_tracks = get_actual_number();
   transfer_disp_c();
@@ -299,23 +297,4 @@ void CREM_OSC::pack_chars(unsigned char* str)
   }
 }
 
-
-
-// Инициализация SPI
-void CREM_OSC::init_SPI()
-{  
-  LPC_IOCON->P1_27 = IOCON_PORT;      //Резервный вход/выход 
-  LPC_IOCON->P5_3 = IOCON_PORT;       //Програмный CS  
-  LPC_GPIO5->DIR |= PROG_CS;
-  LPC_GPIO5->CLR  = PROG_CS;
-  
-  // Используется SPI-2
-  LPC_SSP2->CR0 = 0;
-  LPC_SSP2->CR0 = SPI_Config::CR0_DSS(bits_tr);// | CR0_FRF_SPI;  | CR0_CPOL_HI; | CR0_CPHA_SECOND; 
-  LPC_SSP2->CR1 = 0;
-  SPI_Config::set_spi_clock(LPC_SSP2, Hz_SPI, PeripheralClock );
-  LPC_SSP2->CR1 |= SPI_Config::CR1_SSP_EN ;
-  LPC_SSP2->DMACR = TXDMAE | RXDMAE; // Приём и передача по DMA
-  
-}
 

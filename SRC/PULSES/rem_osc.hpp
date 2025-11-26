@@ -1,10 +1,8 @@
 #pragma once
 
-#include "spi_init.hpp"
 #include "controllerDMA.hpp"
 #include "conv_and_calc.hpp"
 #include "bool_name.hpp"
-#include <vector>
 
 class CREM_OSC
 { 
@@ -15,7 +13,6 @@ private:
     
   unsigned char number_actual_tracks;
   
-  void init_SPI();
   void init_dma();
   unsigned char get_actual_number();
   void transfer_disp_c();
@@ -47,17 +44,7 @@ private:
   };
   
   static constexpr unsigned short send_TRACKS = 0x8F00; //Передача данных треков
-  
-  static constexpr unsigned int Hz_SPI  = 1000000;
-  static constexpr unsigned int bits_tr = 16;
 
-  static constexpr unsigned int IOCON_SPI  = 0x02;
-  static constexpr unsigned int IOCON_PORT = 0x00;
-  static constexpr unsigned int PROG_CS    = 1UL << 3;
-  static constexpr unsigned int RXDMAE     = 1UL << 0;
-  static constexpr unsigned int TXDMAE     = 1UL << 1;
-  static constexpr unsigned int P1_27      = 1UL << 27;
- 
 public:
   
   bool StatusESP32;

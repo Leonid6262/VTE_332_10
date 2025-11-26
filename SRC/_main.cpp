@@ -68,10 +68,10 @@ void main(void)
   static CUART RS485_01(CUART::EUartInstance::UART_RS485_01);       // RS485-1 (uart2)
   static CUART RS485_02(CUART::EUartInstance::UART_RS485_02);       // RS485-2 (uart3)
   
-  static CSPI ports(CSPI::ESPIInstance::SPI_PORTS);                 // SPI-0 - порты ввода/вывода 
-  static CSPI e_adc(CSPI::ESPIInstance::SPI_E_ADC);                 // SPI-1 - внешнее АЦП
-  static CSPI esp32(CSPI::ESPIInstance::SPI_ESP32);                 // SPI-2 - WiFi 
-  
+  static CSET_SPI set_spi0(CSET_SPI::ESPIInstance::SPI_PORTS);      // Конфигурация SPI-0 - порты ввода/вывода 
+  static CSET_SPI set_spi1(CSET_SPI::ESPIInstance::SPI_E_ADC);      // Конфигурация SPI-1 - внешнее АЦП
+  static CSET_SPI set_spi2(CSET_SPI::ESPIInstance::SPI_ESP32);      // Конфигурация SPI-2 - WiFi 
+   
   static CCAN can1(CCAN::ECAN_Id_Instance::CAN1_Id);                // CAN-1   
   static CCAN can2(CCAN::ECAN_Id_Instance::CAN2_Id);                // CAN-2   
   
@@ -79,12 +79,12 @@ void main(void)
   static CDAC_PWM pwm_dac1(CDAC_PWM::EPWM_DACInstance::PWM_DAC1);   // DAC-1 (PWM1:5, Cos_phi)
   static CDAC_PWM pwm_dac2(CDAC_PWM::EPWM_DACInstance::PWM_DAC2);   // DAC-2 (PWM1:4. 4...20mA)
   
-  static CIADC i_adc;           // Внутренее ADC.
-  static CADC adc;              // Внешнее ADC.
+  static CIADC i_adc;                                   // Внутренее ADC.
+  static CADC adc(set_spi1.getTypeDef());               // Внешнее ADC.
   
-  static CSPI_ports spi_ports;  // Дискретные входы и выходы доступные по SPI. Примеры доступа: 
-                                //      if(s_instans.Stator_Key()){...}
-                                //      s_instans.Lamp_REDY(ON);
+  static CSPI_ports spi_ports(set_spi0.getTypeDef());  // Дискретные входы и выходы доступные по SPI. Примеры доступа: 
+                                                       //      if(s_instans.Stator_Key()){...}
+                                                       //      s_instans.Lamp_REDY(ON);
 
   static CDin_cpu din_cpu;      // Дискретные входы контроллера (порты Pi0 и Pi1 по аналогии с СМ3)
   static CDout_cpu dout_cpu;    // Дискретные выходы контроллера (порт Po0 по аналогии с СМ3)

@@ -17,7 +17,7 @@ void CSPI_ports::rw()
   for(char byte = 0; byte < G_CONST::BYTES_RW_REAL; byte++) 
   {
     //Запись в dout с учётом инверсии
-    LPC_SSP0->DR = 
+    SSP->DR = 
       s_instans.UData_dout[byte + (G_CONST::BYTES_RW_MAX - G_CONST::BYTES_RW_REAL)].all 
         ^ settings.dout_spi_invert[byte + (G_CONST::BYTES_RW_MAX - G_CONST::BYTES_RW_REAL)];     
     
@@ -26,9 +26,9 @@ void CSPI_ports::rw()
 
     // После окончание операции r/w считываем байт din порта.
     // учитывая, что процесс фильтрации происходит на фоне транзакции spi,ожидания 
-    // при частотах spi до 900 кГц в while (LPC_SSP0->SR & SR_BSY){} - не происходит
-    while (LPC_SSP0->SR & SPI_Config::SR_BSY){}
-    data_din[byte] = ~LPC_SSP0->DR;    
+    // при частотах spi до 900 кГц в while (SSP->SR & SR_BSY){} - не происходит
+    while (SSP->SR & SPI_Config::SR_BSY){}
+    data_din[byte] = ~SSP->DR;    
   } 
   
   //Захват din и обновление dout (1->0->1 HOLD bit).
@@ -37,16 +37,8 @@ void CSPI_ports::rw()
   LPC_GPIO0->SET = HOLD;  
 }
 
-CSPI_ports::CSPI_ports()
+CSPI_ports::CSPI_ports(LPC_SSP_TypeDef* SSP) : SSP(SSP) 
 {
-  // SPI-0 
-
-  LPC_SSP0->CR0 = 0;
-  LPC_SSP0->CR0 = SPI_Config::CR0_DSS(bits_tr);
-  LPC_SSP0->CR1 = 0;
-  SPI_Config::set_spi_clock(LPC_SSP0, Hz_SPI, PeripheralClock );
-  LPC_SSP0->CR1 |= SPI_Config::CR1_SSP_EN; 
-
   // Обнуление случайных значений в выходных регистрах.
   for(char byte = 0; byte < G_CONST::BYTES_RW_MAX; byte++) 
   {

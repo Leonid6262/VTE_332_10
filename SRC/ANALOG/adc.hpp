@@ -9,6 +9,7 @@ class CADC{
   
 private:
   
+  LPC_SSP_TypeDef* SSP;
   /* 
   cN_CH - данные для запуска конвертации (формат - см. док.) 
   000m.0ccc.c000.0000 m - Manual mode, cccc - N channel (0...15)
@@ -18,15 +19,10 @@ private:
     0x1000, 0x1080, 0x1100, 0x1180, 0x1200, 0x1280, 0x1300, 0x1380, 
     0x1400, 0x1480, 0x1500, 0x1580, 0x1600, 0x1680, 0x1700, 0x1780
   };
-    
-  static constexpr unsigned int D_MODE_PULLUP   = 0x02 <<3;
-  static constexpr unsigned int IOCON_SPI       = 0x03;
-  static constexpr unsigned int Hz_SPI          = 10000000;
-  static constexpr unsigned int bits_tr         = 16;
 
 public:
   
-  CADC();
+  CADC(LPC_SSP_TypeDef*);
   
   // Метод конвертации
   void conv_tnf(std::initializer_list<char>);
